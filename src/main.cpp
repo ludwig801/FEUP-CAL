@@ -36,11 +36,6 @@ int getWeightBetweenVertex(Graph<int> &g, const int s, const int d) {
 
 	vector<int> res, path;
 
-	if(g.getVertex(destino)->getPedido().getHora() <= 0) {
-		//cout << "nao e pedido" << endl;
-		return 0;
-	}
-
 	path.push_back(origem);
 
 	//cout << "antes" << endl;
@@ -75,52 +70,107 @@ void getOptimalTime(Graph<int> &g) {
 	}
 }
 
+void printStack(stack<Vertex<int> *> q) {
+	cout << "-- stack --" << endl;
+	while(!q.empty()) {
+		cout << q.top()->getInfo() << endl;
+		q.pop();
+	}
+	cout << "-----------" << endl;
+}
+
 void potato(Graph<int> &g) {
 
 	int time = g.getTime();
 
-	Vertex<int> * origem = g.getVertex(0);
+	Vertex<int> * vertex = g.getVertex(0);
+	Vertex<int> * temp;
 
 	stack<Vertex<int> *> q;
 
-	vector<Edge<int> >::const_iterator it = origem->getAdj().begin();
+	vector<Edge<int> >::const_iterator it = vertex->getAdj().begin();
+
+	int i = 0;
 
 	while(true) {
-		for(; it != origem->getAdj().end(); ++it) {
+		for(; it != vertex->getAdj().end(); ++it) {
 
 			if(g.allAreVisited()) {
-				//cout << "true" << endl;
 				return;
 			}
+			// DESTINY IS VISITED
 			if((*it).getDest()->isVisited()) {
-				//cout << "aqui parou: " << (*it).getDest()->getInfo() << " ta visitado!" << endl;
 				continue;
 			}
 
-			int weight = getWeightBetweenVertex(g, origem->getInfo(),(*it).getDest()->getInfo());
+			cout << "weight between: (" << vertex->getInfo() << ", " << (*it).getDest()->getInfo() << ")" <<endl;
+			int weight = getWeightBetweenVertex(g, vertex->getInfo(),(*it).getDest()->getInfo());
+			weight += time;
 
-			if(weight > 0) {
-				weight += time;
-				if(weight > (*it).getDest()->getMinTime()) {
-					//cout << "aqui parou: " << (*it).getDest()->getInfo() << " ta atrasado!" << endl;
-					continue;
-				}
-				if(weight < ((*it).getDest()->getMinTime() - OVERHEAD)) {
-					//cout << "aqui parou: " << (*it).getDest()->getInfo() << " ta no overhead!" << endl;
+			// PASSED THE MINIMUM HOUR
+			if(weight > (*it).getDest()->getMinTime()) {
+				continue;
+			}
+			// OVERHEAD
+			if(weight < ((*it).getDest()->getMinTime() - OVERHEAD)) {
+				continue;
+			}
+
+			/*
+			 * NEXT VERTEX
+			 */
+
+			if(!q.empty()) {
+
+				if((*it).getDest()->getInfo() == q.top()->getInfo()) {
 					continue;
 				}
 			}
 
-			origem->setVisited(true);
-			q.push(origem);
+			i = 0;
 
-			cout << "vertex: " << origem->getInfo() << endl;
+			vertex->setVisited(true);
+			q.push(vertex);
 
 			time += (*it).getWeight();
 
-			origem = (*it).getDest();
-			it = origem->getAdj().begin();
+			cout << "---- " << vertex->getInfo() << " ----" << endl;
+
+			vertex = (*it).getDest();
+			it = vertex->getAdj().begin();
+
+			cout << "---- " << vertex->getInfo() << " ----" << endl;
+
+			printStack(q);
+			getchar();
+
+			/*
+			 * END OF NEXT VERTEX
+			 */
 		}
+
+		if(!q.empty()) {
+
+			temp = q.top();
+			time -= getWeightBetweenVertex(g, vertex->getInfo(), temp->getInfo());
+
+			q.pop();
+			vertex = temp;
+			vertex->setVisited(false);
+
+			//cout << "time: " << time << endl;
+
+			i++;
+			it = vertex->getAdj().begin();
+
+			for(int j = 0; j < i; j++) {
+				++it;
+			}
+		}
+		else {
+			return;
+		}
+
 	}
 }
 
@@ -131,11 +181,11 @@ void findSol1(Graph<int> &g) {
 
 	g.floydWarshallShortestPath();
 
-	//g.printGraph();
+	g.printGraph();
 
 	getOptimalTime(g);
 
-	g.setTime(420);
+	g.setTime(385);
 
 	potato(g);
 

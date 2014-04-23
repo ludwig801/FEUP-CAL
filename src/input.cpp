@@ -140,6 +140,4 @@ void readFiles(Graph<int> &g) {
 	readRequests(g);
 
 	gv->rearrange();
-
-	getchar();
 }
