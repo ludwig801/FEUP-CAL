@@ -81,6 +81,8 @@ void readEdges(Graph<int> &g, GraphViewer *gv) {
 
 		g.addEdge(idNoOrigem,idNoDestino,peso);
 
+		//cout << "Edge: (" << idNoOrigem << ", " << idNoDestino << ") - " << peso << endl;
+
 	}
 
 	inFile.close();

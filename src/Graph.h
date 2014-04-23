@@ -38,6 +38,8 @@ class Vertex {
 	bool processing;
 	int indegree;
 	double dist;
+
+	int minTime;
 public:
 
 	Vertex(T in);
@@ -68,6 +70,22 @@ public:
 
 	void setPedido(const Pedido& pedido) {
 		this->pedido = pedido;
+	}
+
+	int getMinTime() const {
+		return minTime;
+	}
+
+	void setMinTime(int minTime) {
+		this->minTime = minTime;
+	}
+
+	const vector<Edge<T> >& getAdj() const {
+		return adj;
+	}
+
+	void setAdj(const vector<Edge<T> >& adj) {
+		this->adj = adj;
 	}
 
 	Vertex* path;
@@ -145,6 +163,23 @@ class Edge {
 	double weight;
 public:
 	Edge(Vertex<T> *d, double w);
+
+	Vertex<T> * getDest() const {
+		return this->dest;
+	}
+
+	void setDest(const Vertex<T>*& dest) {
+		this->dest = dest;
+	}
+
+	double getWeight() const {
+		return weight;
+	}
+
+	void setWeight(double weight) {
+		this->weight = weight;
+	}
+
 	friend class Graph<T>;
 	friend class Vertex<T>;
 };
@@ -174,6 +209,8 @@ class Graph {
 	//exercicio 6
 	int ** W;   //weight
 	int ** P;   //path
+
+	int time;
 
 public:
 	bool addVertex(const T &in);
@@ -215,6 +252,31 @@ public:
 
 	void printGraph();
 	void addRequest(const T &in, Pedido pedido);
+	void printShortestPaths();
+	int getWeightOfEgdeBetween(const T &s, const T &d);
+
+	int getTime() const {
+		return time;
+	}
+
+	void setTime(int time) {
+		this->time = time;
+	}
+
+
+	bool allAreVisited() {
+		typename vector<Vertex<T> *>::const_iterator it = vertexSet.begin();
+
+		for(; it != vertexSet.end(); ++it) {
+			//cout << "Vertex: " << (*it)->getInfo() << " - Visited: " << (*it)->isVisited() << "\n";
+
+			if(!(*it)->isVisited() && ((*it)->getPedido().getHora() > 0)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 };
 
 
@@ -281,7 +343,9 @@ bool Graph<T>::addEdge(const T &sourc, const T &dest, double w) {
 	typename vector<Vertex<T>*>::iterator it= vertexSet.begin();
 	typename vector<Vertex<T>*>::iterator ite= vertexSet.end();
 	int found=0;
+
 	Vertex<T> *vS, *vD;
+
 	while (found!=2 && it!=ite ) {
 		if ( (*it)->info == sourc )
 			{ vS=*it; found++;}
@@ -292,6 +356,7 @@ bool Graph<T>::addEdge(const T &sourc, const T &dest, double w) {
 	if (found!=2) return false;
 	vD->indegree++;
 	vS->addEdge(vD,w);
+	vD->addEdge(vS,w);
 
 	return true;
 }
@@ -330,6 +395,24 @@ void Graph<T>::printGraph() {
 
 }
 
+template <class T>
+int Graph<T>::getWeightOfEgdeBetween(const T &s, const T &d) {
+	Vertex<T> * vS, *vD;
+
+	vS = getVertex(s);
+	vD = getVertex(d);
+
+	typename vector<Edge<T> >::const_iterator it = vS->adj.begin();
+	typename vector<Edge<T> >::const_iterator itEnd = vD->adj.end();
+
+	for(;it != itEnd; it++) {
+		if((*it).dest == vD) {
+			return (*it).weight;
+		}
+	}
+
+	return 0;
+}
 
 template <class T>
 vector<T> Graph<T>::dfs() const {
