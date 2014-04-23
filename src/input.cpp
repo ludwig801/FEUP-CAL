@@ -37,6 +37,7 @@ void readVertex(Graph<int> &g, GraphViewer *gv) {
 		linestream >> X;
 		std::getline(linestream, data, ';');  // read up-to the first ; (discard ;).
 		linestream >> Y;
+
 		gv->addNode(idNo,X,Y);
 
 		g.addVertex(idNo);
@@ -68,6 +69,7 @@ void readEdges(Graph<int> &g, GraphViewer *gv) {
 		std::stringstream linestream(line);
 		std::string data;
 
+		std::stringstream s;
 
 		linestream >> idAresta;
 
@@ -78,6 +80,11 @@ void readEdges(Graph<int> &g, GraphViewer *gv) {
 		std::getline(linestream, data, ';');  // read up-to the first ; (discard ;).
 		linestream >> idNoDestino;
 		gv->addEdge(idAresta,idNoOrigem,idNoDestino, EdgeType::UNDIRECTED);
+
+		s << peso;
+		gv->setEdgeLabel(idAresta, s.str());
+
+		s.str("");
 
 		g.addEdge(idNoOrigem,idNoDestino,peso);
 

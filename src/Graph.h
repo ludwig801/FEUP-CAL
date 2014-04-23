@@ -88,6 +88,10 @@ public:
 		this->adj = adj;
 	}
 
+	bool hasPedido() {
+		return(pedido.getHora() > 0);
+	}
+
 	Vertex* path;
 };
 
@@ -117,7 +121,7 @@ bool Vertex<T>::removeEdgeTo(Vertex<T> *d) {
 
 //atualizado pelo exercício 5
 template <class T>
-Vertex<T>::Vertex(T in): info(in), visited(false), processing(false), indegree(0), dist(0) {
+Vertex<T>::Vertex(T in): info(in), visited(false), processing(false), indegree(0), dist(0), minTime(0) {
 	path = NULL;
 }
 
@@ -263,20 +267,7 @@ public:
 		this->time = time;
 	}
 
-
-	bool allAreVisited() {
-		typename vector<Vertex<T> *>::const_iterator it = vertexSet.begin();
-
-		for(; it != vertexSet.end(); ++it) {
-			//cout << "Vertex: " << (*it)->getInfo() << " - Visited: " << (*it)->isVisited() << "\n";
-
-			if(!(*it)->isVisited() && ((*it)->getPedido().getHora() > 0)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
+	bool allAreVisited();
 };
 
 
@@ -403,7 +394,7 @@ int Graph<T>::getWeightOfEgdeBetween(const T &s, const T &d) {
 	vD = getVertex(d);
 
 	typename vector<Edge<T> >::const_iterator it = vS->adj.begin();
-	typename vector<Edge<T> >::const_iterator itEnd = vD->adj.end();
+	typename vector<Edge<T> >::const_iterator itEnd = vS->adj.end();
 
 	for(;it != itEnd; it++) {
 		if((*it).dest == vD) {
@@ -411,7 +402,24 @@ int Graph<T>::getWeightOfEgdeBetween(const T &s, const T &d) {
 		}
 	}
 
-	return 0;
+	//cout << "not found edge" << endl;
+
+	return -1;
+}
+
+template <class T>
+bool Graph<T>::allAreVisited() {
+	typename vector<Vertex<T> *>::const_iterator it = vertexSet.begin();
+
+	for(; it != vertexSet.end(); ++it) {
+		//cout << "Vertex: " << (*it)->getInfo() << " - Visited: " << (*it)->isVisited() << "\n";
+
+		if(!(*it)->isVisited() && (*it)->hasPedido()) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 template <class T>

@@ -38,12 +38,9 @@ int getWeightBetweenVertex(Graph<int> &g, const int s, const int d) {
 
 	path.push_back(origem);
 
-	//cout << "antes" << endl;
 	g.getfloydWarshallPathAux(origem, destino, res);
-	//cout << "depois" << endl;
 
 	for(unsigned int i = 0; i < res.size(); i++) {
-		//cout << "index: " << i << " - vertex:" << res[i] << endl;
 		path.push_back(res[i]);
 	}
 
@@ -52,9 +49,6 @@ int getWeightBetweenVertex(Graph<int> &g, const int s, const int d) {
 	for(unsigned int i = 0; i < path.size() - 1; i++) {
 		count += g.getWeightOfEgdeBetween(path[i],path[i+1]);
 	}
-
-//	cout << "Vertex: " << g.getVertex(destino)->getInfo()
-//			<< " count: " << g.getVertex(destino)->getPedido().getHora() - count << endl;
 
 	return count;
 }
@@ -70,10 +64,19 @@ void getOptimalTime(Graph<int> &g) {
 	}
 }
 
-void printStack(stack<Vertex<int> *> q) {
+void printStack(stack<Vertex<int> *> s) {
 	cout << "-- stack --" << endl;
+	while(!s.empty()) {
+		cout << s.top()->getInfo() << endl;
+		s.pop();
+	}
+	cout << "-----------" << endl;
+}
+
+void printQueue(queue<Vertex<int> *> q) {
+	cout << "-- queue --" << endl;
 	while(!q.empty()) {
-		cout << q.top()->getInfo() << endl;
+		cout << q.front()->getInfo() << endl;
 		q.pop();
 	}
 	cout << "-----------" << endl;
@@ -174,6 +177,72 @@ void potato(Graph<int> &g) {
 	}
 }
 
+int rotten_potato(Graph<int> &g, Vertex<int>* v, int time, queue<Vertex<int> *> &q) {
+
+	if(g.allAreVisited()) {
+		//cout << "> all are visited <" << endl;
+		return -1;
+	}
+	if(v->isVisited()) {
+		//cout << "----------- is visited: " << v->getInfo() << endl;
+		return 0;
+	}
+
+	if(v->hasPedido()) {
+		if(time > v->getMinTime()) {
+			cout << "----------- is late on: " << v->getInfo() << " by " << (time - v->getMinTime()) << " min" << endl;
+			return 0;
+		}
+		if(time < (v->getMinTime() - OVERHEAD)) {
+			cout << "----------- overhead on: " << v->getInfo() << " by " << (v->getMinTime() - OVERHEAD - time)  << " min" << endl;
+			return 0;
+		}
+	}
+	else {
+		if(v->getInfo() != 0) {
+			cout << "----------- does not have pedido: " << v->getInfo() << endl;
+			return 0;
+		}
+	}
+
+	cout << endl;
+	cout << "  Vertex (" << v->getInfo() << ") is possible" << endl;
+
+	v->setVisited(true);
+	q.push(v);
+
+	Vertex<int> *temp;
+
+	int timeBetween;
+
+	for(size_t i = 0; i < g.getVertexSet().size(); i++) {
+		temp = g.getVertexSet()[i];
+
+		if(temp->getInfo() != v->getInfo()) {
+			timeBetween = getWeightBetweenVertex(g, v->getInfo(), temp->getInfo());
+
+			if(timeBetween > 0) {
+				if (rotten_potato(g, temp, time + timeBetween, q) < 0) {
+					return -1;
+				}
+			}
+
+		}
+	}
+
+	/*
+	 * Only gets here if no solution worked with the above calls, so:
+	 * Uncomment if you want the queue to be empty at "no solution" point,
+	 *  otherwise leave comment and the resulting queue will give a possible solution,
+	 *  leaving out the unreachable vertex.
+	 */
+
+//	q.front()->setVisited(false);
+//	q.pop();
+
+	return 0;
+}
+
 void findSol1(Graph<int> &g) {
 
 	// Initializes graph vertex visited to false
@@ -185,9 +254,20 @@ void findSol1(Graph<int> &g) {
 
 	getOptimalTime(g);
 
-	g.setTime(385);
+	g.setTime(420);
 
-	potato(g);
+	cout << endl;
+
+	queue<Vertex<int> *> q;
+
+	rotten_potato(g, g.getVertex(0), g.getTime(), q);
+
+	if(q.empty()) {
+		cout << "No solution!" << endl;
+	}
+	else {
+		printQueue(q);
+	}
 
 }
 
