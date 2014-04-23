@@ -237,10 +237,30 @@ int rotten_potato(Graph<int> &g, Vertex<int>* v, int time, queue<Vertex<int> *> 
 	 *  leaving out the unreachable vertex.
 	 */
 
-//	q.front()->setVisited(false);
-//	q.pop();
+	if(q.front()->getInfo() != 0) {
+		q.front()->setVisited(false);
+		q.pop();
+	}
 
 	return 0;
+}
+
+void printFinalTime(Graph<int> &g, queue<Vertex<int> *> q) {
+	int finalTime = g.getTime();
+
+	Vertex<int> * temp;
+
+	while(!q.empty()) {
+		temp = q.front();
+		q.pop();
+		finalTime += getWeightBetweenVertex(g, temp->getInfo(), q.front()->getInfo());
+		temp = q.front();
+		q.pop();
+	}
+
+	finalTime += getWeightBetweenVertex(g, temp->getInfo(), 0);
+
+	cout << "final time: " << finalTime << endl;
 }
 
 void findSol1(Graph<int> &g) {
@@ -267,6 +287,7 @@ void findSol1(Graph<int> &g) {
 	}
 	else {
 		printQueue(q);
+		printFinalTime(g, q);
 	}
 
 }
