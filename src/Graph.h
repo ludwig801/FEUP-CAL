@@ -40,6 +40,7 @@ class Vertex {
 	double dist;
 
 	int minTime;
+	int pickupTime;
 public:
 
 	Vertex(T in);
@@ -92,6 +93,14 @@ public:
 		return(pedido.getHora() > 0);
 	}
 
+	int getPickupTime() const {
+		return pickupTime;
+	}
+
+	void setPickupTime(int pickupTime) {
+		this->pickupTime = pickupTime;
+	}
+
 	Vertex* path;
 };
 
@@ -121,7 +130,8 @@ bool Vertex<T>::removeEdgeTo(Vertex<T> *d) {
 
 //atualizado pelo exercício 5
 template <class T>
-Vertex<T>::Vertex(T in): info(in), visited(false), processing(false), indegree(0), dist(0), minTime(0) {
+Vertex<T>::Vertex(T in): info(in), visited(false), processing(false), indegree(0), dist(0),
+							minTime(0), pickupTime(0) {
 	path = NULL;
 }
 

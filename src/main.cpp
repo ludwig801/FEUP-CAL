@@ -20,10 +20,19 @@ void takeOutNonRequests(Graph<int> &g);
 
 int anyWillBeLate(Graph<int> &g, stack<Vertex<int> *> s, Vertex<int>* actual, int time);
 
+void reverseStack(stack<Vertex<int> *> &from, stack<Vertex<int> *> &to);
+void eraseStack(stack<Vertex<int> *> &s);
+
+string convertTime(int time);
+string convertVertexInfo(int info);
+
 void printStack(stack<Vertex<int> *> s);
-void printFinalTime(Graph<int> &g, stack<Vertex<int> *> s);
+int printDropOffTime(Graph<int> &g, stack<Vertex<int> *> s);
 
 void findSol_1(Graph<int> &g);
+void findSol_2(Graph<int> &g);
+
+int findBestMinTime(Graph<int> &g, bool debug = false);
 
 int main() {
 	Graph<int> g;
@@ -31,7 +40,10 @@ int main() {
 	readFiles(g);
 
 	// Find Solution for first scenario
-	findSol_1(g);
+	//findSol_1(g);
+
+	// Find Solution for second scenario
+	findSol_2(g);
 
 	return 0;
 }
@@ -102,112 +114,54 @@ int anyWillBeLate(Graph<int> &g, stack<Vertex<int> *> s, Vertex<int>* actual, in
 	return 0;
 }
 
+void reverseStack(stack<Vertex<int> *> &from, stack<Vertex<int> *> &to) {
+	while(!from.empty()) {
+		to.push(from.top());
+		from.pop();
+	}
+}
+
+void eraseStack(stack<Vertex<int> *> &s) {
+	while(!s.empty() && (s.top()->getInfo() != 0)) {
+		if(s.top()->getInfo() != 0) {
+			s.pop();
+		}
+	}
+}
+
+string convertTime(int time) {
+	stringstream s;
+
+	s << time/60 <<"h";
+
+	time = time % 60;
+
+	s << time << "min";
+
+	return s.str();
+}
+
+string convertVertexInfo(int info) {
+	stringstream s;
+	s << (char)(info + 65);
+	return s.str();
+}
+
 void printStack(stack<Vertex<int> *> s) {
+	stack<Vertex<int> *> r;
+
+	reverseStack(s,r);
+
 	cout << "-- stack --" << endl;
-	while(!s.empty()) {
-		cout << s.top()->getInfo() << endl;
-		s.pop();
+	while(!r.empty()) {
+		cout << convertVertexInfo(r.top()->getInfo());
+		cout << " at: " << convertTime(r.top()->getPickupTime()) << endl;
+		r.pop();
 	}
 	cout << "-----------" << endl;
 }
 
-void potato(Graph<int> &g) {
-
-	int time = g.getTime();
-
-	Vertex<int> * vertex = g.getVertex(0);
-	Vertex<int> * temp;
-
-	stack<Vertex<int> *> q;
-
-	vector<Edge<int> >::const_iterator it = vertex->getAdj().begin();
-
-	int i = 0;
-
-	while(true) {
-		for(; it != vertex->getAdj().end(); ++it) {
-
-			if(g.allAreVisited()) {
-				return;
-			}
-			// DESTINY IS VISITED
-			if((*it).getDest()->isVisited()) {
-				continue;
-			}
-
-			cout << "weight between: (" << vertex->getInfo() << ", " << (*it).getDest()->getInfo() << ")" <<endl;
-			int weight = getTimeBetween(g, vertex->getInfo(),(*it).getDest()->getInfo());
-			weight += time;
-
-			// PASSED THE MINIMUM HOUR
-			if(weight > (*it).getDest()->getMinTime()) {
-				continue;
-			}
-			// OVERHEAD
-			if(weight < ((*it).getDest()->getMinTime() - OVERHEAD)) {
-				continue;
-			}
-
-			/*
-			 * NEXT VERTEX
-			 */
-
-			if(!q.empty()) {
-
-				if((*it).getDest()->getInfo() == q.top()->getInfo()) {
-					continue;
-				}
-			}
-
-			i = 0;
-
-			vertex->setVisited(true);
-			q.push(vertex);
-
-			time += (*it).getWeight();
-
-			cout << "---- " << vertex->getInfo() << " ----" << endl;
-
-			vertex = (*it).getDest();
-			it = vertex->getAdj().begin();
-
-			cout << "---- " << vertex->getInfo() << " ----" << endl;
-
-			printStack(q);
-			getchar();
-
-			/*
-			 * END OF NEXT VERTEX
-			 */
-		}
-
-		if(!q.empty()) {
-
-			temp = q.top();
-			time -= getTimeBetween(g, vertex->getInfo(), temp->getInfo());
-
-			q.pop();
-			vertex = temp;
-			vertex->setVisited(false);
-
-			//cout << "time: " << time << endl;
-
-			i++;
-			it = vertex->getAdj().begin();
-
-			for(int j = 0; j < i; j++) {
-				++it;
-			}
-		}
-		else {
-			return;
-		}
-
-	}
-}
-
-int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> &s) {
-
+int recursiveCall(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> &s) {
 	//cout << "-- " << v->getInfo() << " ------" << endl;
 
 	if(g.allAreVisited()) {
@@ -216,7 +170,7 @@ int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *>
 	}
 
 	if(v->isVisited()) {
-		cout << "----------- is visited: " << v->getInfo() << endl;
+		//cout << "----------- is visited: " << v->getInfo() << endl;
 		return 0;
 	}
 
@@ -230,19 +184,21 @@ int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *>
 		}
 		if((late = anyWillBeLate(g, s, v, time)) > 0) {
 			cout << "----------- would be late: " << late << " if: " << v->getInfo() << " was picked up"<< endl;
-			return 0;
+			return 2;
 		}
 		if(time < (v->getMinTime() - OVERHEAD)) {
 			cout << "----------- overhead on: " << v->getInfo() << " by " << (v->getMinTime() - OVERHEAD - time)  << " min" << endl;
-			return 0;
+			return 3;
 		}
 	}
 
 	//cout << "time on: " << v->getInfo() << " --- " << time << endl;
 
 	v->setVisited(true);
+	v->setPickupTime(time);
+
 	s.push(v);
-	printStack(s);
+	//printStack(s);
 
 	Vertex<int> *temp;
 
@@ -260,7 +216,7 @@ int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *>
 
 				//cout << "  Vertex (" << v->getInfo() << ") at " << time << endl;
 				//cout << "calling rotten_potato2() on: " << temp->getInfo() << endl;
-				switch(rotten_potato2(g, temp, time + timeBetween, s)) {
+				switch(recursiveCall(g, temp, time + timeBetween, s)) {
 				case 0:
 					/*
 					 * NOT VIABLE
@@ -273,7 +229,7 @@ int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *>
 					if(s.top()->getInfo() != 0) {
 						s.top()->setVisited(false);
 						s.pop();
-						printStack(s);
+						//printStack(s);
 					}
 					return 0;
 				case -1:
@@ -288,12 +244,21 @@ int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *>
 		}
 	}
 
-	/*
-	 * Only gets here if no solution worked with the above calls, so:
-	 * Uncomment if you want the queue to be empty at "no solution" point,
-	 *  otherwise leave comment and the resulting queue will give a possible solution,
-	 *  leaving out the unreachable vertex.
-	 */
+	return 0;
+}
+
+int scenario1_recursive(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> &s) {
+
+
+	switch(recursiveCall(g, v, time, s)) {
+	case -1:
+		/*
+		 * ALL VISITED
+		 */
+		return -1;
+	default:
+		break;
+	}
 
 	if(s.top()->getInfo() != 0) {
 		s.top()->setVisited(false);
@@ -302,16 +267,24 @@ int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *>
 	}
 
 	return 0;
+
 }
 
-int rotten_potato(Graph<int> &g, int time, stack<Vertex<int> *> &s) {
+int scenario2_recursive(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> &s) {
 
-	Vertex<int> *temp;
+	return recursiveCall(g, v, time, s);
+}
+
+int scenario1(Graph<int> &g, int time, stack<Vertex<int> *> &s) {
+
+	Vertex<int> *temp = g.getVertex(0);
 
 	int timeBetween;
 
 	// Put the airport in the stack.
-	s.push(g.getVertex(0));
+	temp->setVisited(true);
+	temp->setPickupTime(time);
+	s.push(temp);
 
 	for(size_t i = 0; i < g.getVertexSet().size(); i++) {
 		temp = g.getVertexSet()[i];
@@ -320,7 +293,7 @@ int rotten_potato(Graph<int> &g, int time, stack<Vertex<int> *> &s) {
 			timeBetween = getTimeBetween(g, 0, temp->getInfo());
 
 			if(timeBetween > 0) {
-				if (rotten_potato2(g, temp, time + timeBetween, s) < 0) {
+				if (scenario1_recursive(g, temp, time + timeBetween, s) < 0) {
 					return -1;
 				}
 			}
@@ -331,7 +304,75 @@ int rotten_potato(Graph<int> &g, int time, stack<Vertex<int> *> &s) {
 	return 0;
 }
 
-void printFinalTime(Graph<int> &g, stack<Vertex<int> *> s) {
+int scenario2(Graph<int> &g, int time, stack<Vertex<int> *> &s) {
+
+	// Actual vertex
+	Vertex<int> *temp = g.getVertex(0);
+
+	int timeBetween;
+
+	// Put the airport in the stack.
+	temp->setVisited(true);
+	temp->setPickupTime(time);
+	s.push(temp);
+
+	while(true){
+		for(size_t i = 0; i < g.getVertexSet().size(); i++) {
+			temp = g.getVertexSet()[i];
+
+			if(temp->getInfo() != 0) {
+				timeBetween = getTimeBetween(g, 0, temp->getInfo());
+
+				if(timeBetween > 0) {
+					if (scenario2_recursive(g, temp, time + timeBetween, s) < 0) {
+						return -1;
+					}
+				}
+
+			}
+		}
+
+		if(g.allAreVisited()) {
+			break;
+		}
+		else {
+
+
+			if(s.top()->getInfo() == 0) {
+				Vertex<int>* v = g.getVertex(findBestMinTime(g, true));
+				if(time <= ( v->getMinTime() - getTimeBetween(g, 0, v->getInfo()))) {
+					time = v->getMinTime() - getTimeBetween(g, 0, v->getInfo());
+					g.setTime(time);
+					g.getVertex(0)->setPickupTime(time);
+				} else {
+					//cout << "No solution found" << endl;
+					return 0;
+				}
+			}
+			else {
+
+
+				// Check the results.
+				printStack(s);
+				time = printDropOffTime(g, s);
+
+				//cout << "time: " << convertTime(time) << endl;
+
+				eraseStack(s);
+				g.getVertex(0)->setPickupTime(time);
+//
+//				g.printGraph();
+			}
+
+
+
+		}
+	}
+
+	return 0;
+}
+
+int printDropOffTime(Graph<int> &g, stack<Vertex<int> *> s) {
 	int finalTime = g.getTime();
 
 	Vertex<int> * temp;
@@ -346,7 +387,11 @@ void printFinalTime(Graph<int> &g, stack<Vertex<int> *> s) {
 		}
 	}
 
-	cout << "final time: " << finalTime << endl;
+	g.setTime(finalTime);
+
+	cout << "drop-off: " << convertTime(finalTime) << endl;
+
+	return finalTime;
 }
 
 void findSol_1(Graph<int> &g) {
@@ -369,7 +414,7 @@ void findSol_1(Graph<int> &g) {
 	stack<Vertex<int> *> s;
 
 	// Begin the finding of a solution.
-	rotten_potato(g, g.getTime(), s);
+	scenario1(g, g.getTime(), s);
 
 	// Check the results.
 	if(s.top()->getInfo() == 0) {
@@ -377,9 +422,61 @@ void findSol_1(Graph<int> &g) {
 	}
 	else {
 		printStack(s);
-		printFinalTime(g, s);
+		printDropOffTime(g, s);
 	}
 
 }
 
+void findSol_2(Graph<int> &g) {
+	// Initializes graph vertex visited to false.
+	g.setVisited(false);
 
+	// Run FloydWarshall's algorithm to get the shortest paths from any vertex to another.
+	g.floydWarshallShortestPath();
+
+	// Set the limit time for each pickup.
+	setVertexLimitTime(g);
+
+	// Set the initial time.
+	g.setTime(200);
+
+	// Set any empty vertex (without pickup) to visited.
+	takeOutNonRequests(g);
+
+	stack<Vertex<int> *> s;
+
+	// Begin the finding of a solution.
+	scenario2(g, g.getTime(), s);
+
+	// Check the results.
+	if(s.top()->getInfo() == 0) {
+		cout << "No solution found!" << endl;
+	}
+	else {
+		printStack(s);
+		printDropOffTime(g, s);
+	}
+}
+
+int findBestMinTime(Graph<int> &g, bool debug) {
+
+	int minTime = INT_MAX;
+	int id = 0;
+	vector<Vertex<int> *> v = g.getVertexSet();
+	for(size_t i = 0; i < v.size(); i++) {
+		if(!v[i]->isVisited()) {
+			if(v[i]->getMinTime() <= minTime){
+				minTime = v[i]->getMinTime();
+				id = v[i]->getInfo();
+			}
+		}
+	}
+
+	if(debug) cout << "Best min time: " << minTime << endl;
+
+	if(minTime != INT_MAX) {
+		return id;
+	} else {
+		return -1;
+	}
+}
