@@ -9,6 +9,40 @@
 
 using namespace std;
 
+void readDetails(Graph<int> &g) {
+	ifstream inFile;
+
+	//Ler o ficheiro nos.txt
+	inFile.open("details.txt");
+
+	if (!inFile) {
+		cerr << "Unable to open file details.txt";
+		exit(1);   // call system to stop
+	}
+
+	std::string   line;
+
+	int overhead = 0;
+	int seats = 0;
+
+	while(std::getline(inFile, line))
+	{
+		std::stringstream linestream(line);
+		std::string         data;
+
+		linestream >> overhead;
+
+		std::getline(linestream, data, ';');  // read up-to the first ; (discard ;).
+		linestream >> seats;
+	}
+
+	g.seats = seats;
+	g.overhead = overhead;
+
+	inFile.close();
+
+}
+
 void readVertex(Graph<int> &g, GraphViewer *gv) {
 	ifstream inFile;
 
@@ -16,7 +50,7 @@ void readVertex(Graph<int> &g, GraphViewer *gv) {
 	inFile.open("nos.txt");
 
 	if (!inFile) {
-		cerr << "Unable to open file datafile.txt";
+		cerr << "Unable to open file nos.txt";
 		exit(1);   // call system to stop
 	}
 
@@ -55,7 +89,7 @@ void readEdges(Graph<int> &g, GraphViewer *gv) {
 	inFile.open("arestas.txt");
 
 	if (!inFile) {
-		cerr << "Unable to open file datafile.txt";
+		cerr << "Unable to open file arestas.txt";
 		exit(1);   // call system to stop
 	}
 
@@ -103,7 +137,7 @@ void readRequests(Graph<int> &g) {
 	inFile.open("pedidos.txt");
 
 	if (!inFile) {
-		cerr << "Unable to open file datafile.txt";
+		cerr << "Unable to open file pedidos.txt";
 		exit(1);   // call system to stop
 	}
 
@@ -145,6 +179,8 @@ void readFiles(Graph<int> &g) {
 	readEdges(g,gv);
 
 	readRequests(g);
+
+	readDetails(g);
 
 	gv->rearrange();
 }

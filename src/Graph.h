@@ -41,6 +41,7 @@ class Vertex {
 
 	int minTime;
 	int pickupTime;
+
 public:
 
 	Vertex(T in);
@@ -280,6 +281,26 @@ public:
 	}
 
 	bool allAreVisited();
+
+	int overhead;
+
+
+	/*
+	 *
+               .----------------.
+               |_I_I_I_I_I_I_I_I]___
+       .::.    |  _          | / _  )
+       ':::'' ='-(_)----------=-(_)-'
+
+
+	 */
+	int seats;
+	int usedSeats;
+
+	bool isVanOverloaded() {
+		return usedSeats > seats;
+	}
+
 };
 
 
@@ -387,14 +408,21 @@ bool Graph<T>::removeEdge(const T &sourc, const T &dest) {
 
 template <class T>
 void Graph<T>::printGraph() {
+
+	cout << "=========== GRAPH ===========" << endl;
+
 	typename vector<Vertex<T> *>::const_iterator it = vertexSet.begin();
 	typename vector<Vertex<T> *>::const_iterator itEnd = vertexSet.end();
+
+	cout << "Vertex: i > visited ( Hora, NumPessoas )" << endl << endl;
 
 	for (;it != itEnd; it++) {
 		cout << "Vertex: " << (*it)->info << " > " << (*it)->isVisited()
 			<< " (" << (*it)->getPedido().getHora() << ", "
 			<< (*it)->getPedido().getNumPessoas() << ")\n";
 	}
+
+	cout << "=============================" << endl;
 
 }
 
