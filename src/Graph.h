@@ -255,6 +255,8 @@ public:
 	}
 
 	void printGraph();
+	void printGraphMinTime();
+
 	void addRequest(const T &in, Pedido pedido);
 	void printShortestPaths();
 	int getWeightOfEgdeBetween(const T &s, const T &d);
@@ -387,6 +389,17 @@ void Graph<T>::printGraph() {
 }
 
 template <class T>
+void Graph<T>::printGraphMinTime() {
+	typename vector<Vertex<T> *>::const_iterator it = vertexSet.begin();
+	typename vector<Vertex<T> *>::const_iterator itEnd = vertexSet.end();
+
+	for (;it != itEnd; it++) {
+		cout << "Vertex: " << (*it)->info << " > " << (*it)->getMinTime() << "\n";
+	}
+
+}
+
+template <class T>
 int Graph<T>::getWeightOfEgdeBetween(const T &s, const T &d) {
 	Vertex<T> * vS, *vD;
 
@@ -421,6 +434,7 @@ bool Graph<T>::allAreVisited() {
 
 	return true;
 }
+
 
 template <class T>
 vector<T> Graph<T>::dfs() const {
