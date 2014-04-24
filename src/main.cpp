@@ -73,15 +73,6 @@ void printStack(stack<Vertex<int> *> s) {
 	cout << "-----------" << endl;
 }
 
-void printQueue(queue<Vertex<int> *> q) {
-	cout << "-- queue --" << endl;
-	while(!q.empty()) {
-		cout << q.front()->getInfo() << endl;
-		q.pop();
-	}
-	cout << "-----------" << endl;
-}
-
 void potato(Graph<int> &g) {
 
 	int time = g.getTime();
@@ -219,7 +210,7 @@ int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *>
 			if(timeBetween > 0) {
 				//cout << endl;
 
-				//printStack(s);
+				printStack(s);
 
 				//cout << "  Vertex (" << v->getInfo() << ") at " << time << endl;
 				//cout << "calling rotten_potato2() on: " << temp->getInfo() << endl;
@@ -290,24 +281,6 @@ int rotten_potato(Graph<int> &g, int time, stack<Vertex<int> *> &s) {
 	return 0;
 }
 
-void printFinalTime(Graph<int> &g, queue<Vertex<int> *> q) {
-	int finalTime = g.getTime();
-
-	Vertex<int> * temp;
-
-	while(!q.empty()) {
-		temp = q.front();
-		q.pop();
-		if(!q.empty()) {
-			finalTime += getWeightBetweenVertex(g, temp->getInfo(), q.front()->getInfo());
-		}
-	}
-
-	finalTime += getWeightBetweenVertex(g, temp->getInfo(), 0);
-
-	cout << "final time: " << finalTime << endl;
-}
-
 void printFinalTime(Graph<int> &g, stack<Vertex<int> *> s) {
 	int finalTime = g.getTime();
 
@@ -345,24 +318,22 @@ void findSol1(Graph<int> &g) {
 
 	g.floydWarshallShortestPath();
 
-	g.printGraph();
-
 	getOptimalTime(g);
 
-	g.printGraphMinTime();
+	//g.printGraph();
+	//g.printGraphMinTime();
 
 	g.setTime(420);
 
 	takeOutNonRequests(g);
 
-	cout << endl;
-
 	stack<Vertex<int> *> s;
 
 	rotten_potato(g, g.getTime(), s);
 
-	if(s.empty()) {
-		cout << "No solution!" << endl;
+
+	if(s.top()->getInfo() == 0) {
+		cout << "No solution found!" << endl;
 	}
 	else {
 		printStack(s);
