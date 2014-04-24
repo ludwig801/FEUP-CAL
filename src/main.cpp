@@ -11,6 +11,7 @@
 #include <iostream>
 
 #define	OVERHEAD	60
+#define DEBUG_MODE true
 
 using namespace std;
 
@@ -30,13 +31,58 @@ using namespace std;
  */
 bool isViable(Graph<int> &g, bool debug = false);
 
-int getTimeBetween(Graph<int> &g, const int v1, const int v2);
-void setVertexLimitTime(Graph<int> &g);
-void takeOutNonRequests(Graph<int> &g);
+/**
+ * Retorna o tempo (peso) entre dois vertices.
+ *
+ * @param g Grafo
+ * @param v1 Origem
+ * @param v2 Destino
+ *
+ * @return Distancia entre os vertices.
+ */
+int getTimeBetween(Graph<int> &g, const int v1, const int v2, bool debug = false);
 
-int anyWillBeLate(Graph<int> &g, stack<Vertex<int> *> s, Vertex<int>* actual, int time);
+/**
+ * Define para cada vertice o tempo minimo que o autocarro tem de chegar
+ * para conseguir cumprir a hora pretendida.
+ *
+ * @param g Grafo
+ */
+void setVertexLimitTime(Graph<int> &g, bool debug = false);
 
+/**
+ * "Remove" todos os vertices que nao tem pedidos, por exemplo, os vertices de ligacao.
+ * Esta remocao e feita mudando a flag 'visited' do vertice para true.
+ *
+ * @param g Grafo
+ */
+void takeOutNonRequests(Graph<int> &g, bool debug = false);
+
+/**
+ * Testa se algum dos clientes ira chegar atrasado ao aeroporto, considerando o estado actual da execucao.
+ *
+ * @param g Grafo
+ * @param s Estado da stack de clientes atuais
+ * @param actual Posicao atual da carrinha no grafo
+ * @param time Tempo atual
+ *
+ * @return 0, se ninguem chegar atrasado, caso contrario retorna o indice do que chegar atrasado.
+ */
+int anyWillBeLate(Graph<int> &g, stack<Vertex<int> *> s, Vertex<int>* actual, int time, bool debug = false);
+
+/**
+ * Copia uma stack para a outra, de forma inversa.
+ *
+ * @param from Stack original
+ * @param to Stack inversa
+ */
 void reverseStack(stack<Vertex<int> *> &from, stack<Vertex<int> *> &to);
+
+/**
+ * Limpa a stack.
+ *
+ * @param s Stack a limpar.
+ */
 void eraseStack(stack<Vertex<int> *> &s);
 
 string convertTime(int time);
@@ -64,7 +110,7 @@ int main() {
 	return 0;
 }
 
-int getTimeBetween(Graph<int> &g, const int v1, const int v2) {
+int getTimeBetween(Graph<int> &g, const int v1, const int v2, bool debug) {
 	int count = 0;
 
 	vector<int> res, path;
@@ -83,10 +129,14 @@ int getTimeBetween(Graph<int> &g, const int v1, const int v2) {
 		count += g.getWeightOfEgdeBetween(path[i],path[i+1]);
 	}
 
+	if(debug) {
+		cout << "> Time between " << v1 << " and " << v2 << ": " << count << endl;
+	}
+
 	return count;
 }
 
-void setVertexLimitTime(Graph<int> &g) {
+void setVertexLimitTime(Graph<int> &g, bool debug) {
 	int source = 0;
 	int count = 0;
 
@@ -95,22 +145,35 @@ void setVertexLimitTime(Graph<int> &g) {
 		count = getTimeBetween(g,source,i);
 
 		g.getVertex(i)->setMinTime(g.getVertex(i)->getPedido().getHora() - count);
+
+		if(debug) cout << "> Min time for Vertex "
+				<< g.getVertex(i)->getInfo()
+				<< ": " << g.getVertex(i)->getMinTime() << endl;
 	}
+
 }
 
-void takeOutNonRequests(Graph<int> &g) {
+void takeOutNonRequests(Graph<int> &g, bool debug) {
 	Vertex<int> *temp;
 
 	for(size_t i = 0; i < g.getVertexSet().size(); i++) {
 		temp = g.getVertexSet()[i];
 
-		if(!temp->hasPedido() /*&& temp->getInfo() != 0*/) {
+		if(!temp->hasPedido()) {
 			temp->setVisited(true);
+
+			if(debug) {
+				cout << "> Removed vertex: " << temp->getInfo() << endl;
+			}
+
 		}
+
+
 	}
 }
 
-int anyWillBeLate(Graph<int> &g, stack<Vertex<int> *> s, Vertex<int>* actual, int time) {
+int anyWillBeLate(Graph<int> &g, stack<Vertex<int> *> s, Vertex<int>* actual, int time, bool debug) {
+
 	int timeToAirport = 0;
 
 	timeToAirport = getTimeBetween(g, 0, actual->getInfo());
@@ -120,6 +183,9 @@ int anyWillBeLate(Graph<int> &g, stack<Vertex<int> *> s, Vertex<int>* actual, in
 		if(s.top()->hasPedido()) {
 
 			if((time + timeToAirport) > s.top()->getPedido().getHora()) {
+				if(debug) {
+					cout << "> The client " << s.top()->getInfo() << " will be late.";
+				}
 				return s.top()->getInfo();
 			}
 
@@ -487,6 +553,9 @@ void findSol_2(Graph<int> &g) {
 
 	stack<Vertex<int> *> s;
 
+
+	g.sortVertex();
+
 	g.printGraph();
 
 	if(!isViable(g, true)) {
@@ -545,8 +614,8 @@ bool isViable(Graph<int> &g, bool debug) {
 			return false;
 		}
 
-		// Verifica se algum dos vértices tem um tempo mínimo superior ao tempo atual.
-		if(v[i]->getMinTime() > g.getTime()) {
+		// Verifica se algum dos vértices tem um tempo mínimo inferior ao tempo atual.
+		if(v[i]->getMinTime() < g.getTime() && v[i]->getMinTime() > 0) {
 			if(debug) {
 				cout << "Vertex " << v[i]->getInfo()
 						<< " can never be on time ("

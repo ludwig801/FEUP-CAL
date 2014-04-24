@@ -108,9 +108,9 @@ public:
 
 template <class T>
 struct vertex_greater_than {
-    bool operator()(Vertex<T> * a, Vertex<T> * b) const {
-        return a->getDist() > b->getDist();
-    }
+	bool operator()(Vertex<T> * a, Vertex<T> * b) const {
+		return a->getDist() > b->getDist();
+	}
 };
 
 
@@ -132,7 +132,7 @@ bool Vertex<T>::removeEdgeTo(Vertex<T> *d) {
 //atualizado pelo exercício 5
 template <class T>
 Vertex<T>::Vertex(T in): info(in), visited(false), processing(false), indegree(0), dist(0),
-							minTime(0), pickupTime(0) {
+minTime(0), pickupTime(0) {
 	path = NULL;
 }
 
@@ -260,9 +260,9 @@ public:
 	void setVisited(boolean value) {
 		vector<Vertex<int> *>::iterator it = vertexSet.begin(), itEnd = vertexSet.end();
 
-			for (;it != itEnd; it++) {
-				(*it)->setVisited(value);
-			}
+		for (;it != itEnd; it++) {
+			(*it)->setVisited(value);
+		}
 	}
 
 	void printGraph();
@@ -301,6 +301,7 @@ public:
 		return usedSeats > seats;
 	}
 
+	void sortVertex();
 };
 
 
@@ -372,9 +373,9 @@ bool Graph<T>::addEdge(const T &sourc, const T &dest, double w) {
 
 	while (found!=2 && it!=ite ) {
 		if ( (*it)->info == sourc )
-			{ vS=*it; found++;}
+		{ vS=*it; found++;}
 		if ( (*it)->info == dest )
-			{ vD=*it; found++;}
+		{ vD=*it; found++;}
 		it ++;
 	}
 	if (found!=2) return false;
@@ -393,9 +394,9 @@ bool Graph<T>::removeEdge(const T &sourc, const T &dest) {
 	Vertex<T> *vS, *vD;
 	while (found!=2 && it!=ite ) {
 		if ( (*it)->info == sourc )
-			{ vS=*it; found++;}
+		{ vS=*it; found++;}
 		if ( (*it)->info == dest )
-			{ vD=*it; found++;}
+		{ vD=*it; found++;}
 		it ++;
 	}
 	if (found!=2)
@@ -418,8 +419,8 @@ void Graph<T>::printGraph() {
 
 	for (;it != itEnd; it++) {
 		cout << "Vertex: " << (*it)->info << " > " << (*it)->isVisited()
-			<< " (" << (*it)->getPedido().getHora() << ", "
-			<< (*it)->getPedido().getNumPessoas() << ")\n";
+					<< " (" << (*it)->getPedido().getHora() << ", "
+					<< (*it)->getPedido().getNumPessoas() << ")\n";
 	}
 
 	cout << "=============================" << endl;
@@ -483,8 +484,8 @@ vector<T> Graph<T>::dfs() const {
 	vector<T> res;
 	it=vertexSet.begin();
 	for (; it !=ite; it++)
-	    if ( (*it)->visited==false )
-	    	dfs(*it,res);
+		if ( (*it)->visited==false )
+			dfs(*it,res);
 	return res;
 }
 
@@ -495,10 +496,10 @@ void Graph<T>::dfs(Vertex<T> *v,vector<T> &res) const {
 	typename vector<Edge<T> >::iterator it= (v->adj).begin();
 	typename vector<Edge<T> >::iterator ite= (v->adj).end();
 	for (; it !=ite; it++)
-	    if ( it->dest->visited == false ){
-	    	//cout << "ok ";
-	    	dfs(it->dest, res);
-	    }
+		if ( it->dest->visited == false ){
+			//cout << "ok ";
+			dfs(it->dest, res);
+		}
 }
 
 template <class T>
@@ -601,8 +602,8 @@ void Graph<T>::dfsVisit() {
 		(*it)->visited=false;
 	it=vertexSet.begin();
 	for (; it !=ite; it++)
-	    if ( (*it)->visited==false )
-	    	dfsVisit(*it);
+		if ( (*it)->visited==false )
+			dfsVisit(*it);
 }
 
 template <class T>
@@ -613,9 +614,9 @@ void Graph<T>::dfsVisit(Vertex<T> *v) {
 	typename vector<Edge<T> >::iterator ite= (v->adj).end();
 	for (; it !=ite; it++) {
 		if ( it->dest->processing == true) numCycles++;
-	    if ( it->dest->visited == false ){
-	    	dfsVisit(it->dest);
-	    }
+		if ( it->dest->visited == false ){
+			dfsVisit(it->dest);
+		}
 	}
 	v->processing = false;
 }
@@ -911,6 +912,20 @@ void Graph<T>::addRequest(const T &in, Pedido pedido) {
 		if ((*it)->info == in) {
 			(*it)->setPedido(pedido);
 		}
+	}
+}
+
+template <class T>
+void Graph<T>::sortVertex() {
+
+	for(size_t p = 2; p < this->vertexSet.size(); p++) {
+		Vertex<int> * tmp = vertexSet[p];
+		int j;
+		for(j = p; j > 1 && (tmp->getMinTime() < this->getVertex((j-1))->getMinTime()); j--) {
+			vertexSet[j] = vertexSet[j-1];
+		}
+
+		vertexSet[j] = tmp;
 	}
 }
 
