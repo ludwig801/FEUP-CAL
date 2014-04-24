@@ -10,41 +10,46 @@
 #include <stack>
 #include <iostream>
 
-#define OVERHEAD	60
+#define	OVERHEAD	60
 
 using namespace std;
 
-void findSol1(Graph<int> &g);
+int getTimeBetween(Graph<int> &g, const int v1, const int v2);
+void setVertexLimitTime(Graph<int> &g);
+void takeOutNonRequests(Graph<int> &g);
+
+int anyWillBeLate(Graph<int> &g, stack<Vertex<int> *> s, Vertex<int>* actual, int time);
+
+void printStack(stack<Vertex<int> *> s);
+void printFinalTime(Graph<int> &g, stack<Vertex<int> *> s);
+
+void findSol_1(Graph<int> &g);
 
 int main() {
 	Graph<int> g;
 
 	readFiles(g);
 
-	//cout << "readFiles()" << endl;
-	findSol1(g);
+	// Find Solution for first scenario
+	findSol_1(g);
 
-	//cout << "findSol1()" << endl;
 	return 0;
 }
 
-int getWeightBetweenVertex(Graph<int> &g, const int s, const int d) {
-	int origem = s;
-	int destino = d;
-
+int getTimeBetween(Graph<int> &g, const int v1, const int v2) {
 	int count = 0;
 
 	vector<int> res, path;
 
-	path.push_back(origem);
+	path.push_back(v1);
 
-	g.getfloydWarshallPathAux(origem, destino, res);
+	g.getfloydWarshallPathAux(v1, v2, res);
 
 	for(unsigned int i = 0; i < res.size(); i++) {
 		path.push_back(res[i]);
 	}
 
-	path.push_back(destino);
+	path.push_back(v2);
 
 	for(unsigned int i = 0; i < path.size() - 1; i++) {
 		count += g.getWeightOfEgdeBetween(path[i],path[i+1]);
@@ -53,15 +58,48 @@ int getWeightBetweenVertex(Graph<int> &g, const int s, const int d) {
 	return count;
 }
 
-void getOptimalTime(Graph<int> &g) {
-	int origem = 0;
+void setVertexLimitTime(Graph<int> &g) {
+	int source = 0;
 	int count = 0;
+
 	for(unsigned int i = 1; i < g.getVertexSet().size(); i++) {
 
-		count = getWeightBetweenVertex(g,origem,i);
+		count = getTimeBetween(g,source,i);
 
 		g.getVertex(i)->setMinTime(g.getVertex(i)->getPedido().getHora() - count);
 	}
+}
+
+void takeOutNonRequests(Graph<int> &g) {
+	Vertex<int> *temp;
+
+	for(size_t i = 0; i < g.getVertexSet().size(); i++) {
+		temp = g.getVertexSet()[i];
+
+		if(!temp->hasPedido() /*&& temp->getInfo() != 0*/) {
+			temp->setVisited(true);
+		}
+	}
+}
+
+int anyWillBeLate(Graph<int> &g, stack<Vertex<int> *> s, Vertex<int>* actual, int time) {
+	int timeToAirport = 0;
+
+	timeToAirport = getTimeBetween(g, 0, actual->getInfo());
+
+	while(!s.empty() && (s.top()->getInfo() != 0)) {
+
+		if(s.top()->hasPedido()) {
+
+			if((time + timeToAirport) > s.top()->getPedido().getHora()) {
+				return s.top()->getInfo();
+			}
+
+			s.pop();
+		}
+	}
+
+	return 0;
 }
 
 void printStack(stack<Vertex<int> *> s) {
@@ -98,7 +136,7 @@ void potato(Graph<int> &g) {
 			}
 
 			cout << "weight between: (" << vertex->getInfo() << ", " << (*it).getDest()->getInfo() << ")" <<endl;
-			int weight = getWeightBetweenVertex(g, vertex->getInfo(),(*it).getDest()->getInfo());
+			int weight = getTimeBetween(g, vertex->getInfo(),(*it).getDest()->getInfo());
 			weight += time;
 
 			// PASSED THE MINIMUM HOUR
@@ -146,7 +184,7 @@ void potato(Graph<int> &g) {
 		if(!q.empty()) {
 
 			temp = q.top();
-			time -= getWeightBetweenVertex(g, vertex->getInfo(), temp->getInfo());
+			time -= getTimeBetween(g, vertex->getInfo(), temp->getInfo());
 
 			q.pop();
 			vertex = temp;
@@ -170,23 +208,32 @@ void potato(Graph<int> &g) {
 
 int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> &s) {
 
+	//cout << "-- " << v->getInfo() << " ------" << endl;
+
 	if(g.allAreVisited()) {
-		//cout << "> all are visited <" << endl;
+		cout << "----------- all are visited ----------- " << endl;
 		return -1;
 	}
 
 	if(v->isVisited()) {
-		//cout << "----------- is visited: " << v->getInfo() << endl;
+		cout << "----------- is visited: " << v->getInfo() << endl;
 		return 0;
 	}
 
 	if(v->getInfo() != 0) {
+
+		int late = 0;
+
 		if(time > v->getMinTime()) {
-			//cout << "----------- is late on: " << v->getInfo() << " by " << (time - v->getMinTime()) << " min" << endl;
+			cout << "----------- is late on: " << v->getInfo() << " by " << (time - v->getMinTime()) << " min" << endl;
 			return 1;
 		}
+		if((late = anyWillBeLate(g, s, v, time)) > 0) {
+			cout << "----------- would be late: " << late << " if: " << v->getInfo() << " was picked up"<< endl;
+			return 0;
+		}
 		if(time < (v->getMinTime() - OVERHEAD)) {
-			//cout << "----------- overhead on: " << v->getInfo() << " by " << (v->getMinTime() - OVERHEAD - time)  << " min" << endl;
+			cout << "----------- overhead on: " << v->getInfo() << " by " << (v->getMinTime() - OVERHEAD - time)  << " min" << endl;
 			return 0;
 		}
 	}
@@ -195,6 +242,7 @@ int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *>
 
 	v->setVisited(true);
 	s.push(v);
+	printStack(s);
 
 	Vertex<int> *temp;
 
@@ -205,12 +253,10 @@ int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *>
 		temp = g.getVertexSet()[i];
 
 		if(temp->getInfo() != v->getInfo()) {
-			timeBetween = getWeightBetweenVertex(g, v->getInfo(), temp->getInfo());
+			timeBetween = getTimeBetween(g, v->getInfo(), temp->getInfo());
 
 			if(timeBetween > 0) {
 				//cout << endl;
-
-				printStack(s);
 
 				//cout << "  Vertex (" << v->getInfo() << ") at " << time << endl;
 				//cout << "calling rotten_potato2() on: " << temp->getInfo() << endl;
@@ -227,6 +273,7 @@ int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *>
 					if(s.top()->getInfo() != 0) {
 						s.top()->setVisited(false);
 						s.pop();
+						printStack(s);
 					}
 					return 0;
 				case -1:
@@ -251,6 +298,7 @@ int rotten_potato2(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *>
 	if(s.top()->getInfo() != 0) {
 		s.top()->setVisited(false);
 		s.pop();
+		printStack(s);
 	}
 
 	return 0;
@@ -261,13 +309,15 @@ int rotten_potato(Graph<int> &g, int time, stack<Vertex<int> *> &s) {
 	Vertex<int> *temp;
 
 	int timeBetween;
+
+	// Put the airport in the stack.
 	s.push(g.getVertex(0));
 
 	for(size_t i = 0; i < g.getVertexSet().size(); i++) {
 		temp = g.getVertexSet()[i];
 
 		if(temp->getInfo() != 0) {
-			timeBetween = getWeightBetweenVertex(g, 0, temp->getInfo());
+			timeBetween = getTimeBetween(g, 0, temp->getInfo());
 
 			if(timeBetween > 0) {
 				if (rotten_potato2(g, temp, time + timeBetween, s) < 0) {
@@ -286,52 +336,42 @@ void printFinalTime(Graph<int> &g, stack<Vertex<int> *> s) {
 
 	Vertex<int> * temp;
 
-	finalTime += getWeightBetweenVertex(g, 0, s.top()->getInfo());
+	finalTime += getTimeBetween(g, 0, s.top()->getInfo());
 
 	while(!s.empty()) {
 		temp = s.top();
 		s.pop();
 		if(!s.empty()) {
-			finalTime += getWeightBetweenVertex(g, temp->getInfo(), s.top()->getInfo());
+			finalTime += getTimeBetween(g, temp->getInfo(), s.top()->getInfo());
 		}
 	}
 
 	cout << "final time: " << finalTime << endl;
 }
 
-void takeOutNonRequests(Graph<int> &g) {
-	Vertex<int> *temp;
+void findSol_1(Graph<int> &g) {
 
-	for(size_t i = 0; i < g.getVertexSet().size(); i++) {
-		temp = g.getVertexSet()[i];
-
-		if(!temp->hasPedido() /*&& temp->getInfo() != 0*/) {
-			temp->setVisited(true);
-		}
-	}
-}
-
-void findSol1(Graph<int> &g) {
-
-	// Initializes graph vertex visited to false
+	// Initializes graph vertex visited to false.
 	g.setVisited(false);
 
+	// Run FloydWarshall's algorithm to get the shortest paths from any vertex to another.
 	g.floydWarshallShortestPath();
 
-	getOptimalTime(g);
+	// Set the limit time for each pickup.
+	setVertexLimitTime(g);
 
-	//g.printGraph();
-	//g.printGraphMinTime();
-
+	// Set the initial time.
 	g.setTime(420);
 
+	// Set any empty vertex (without pickup) to visited.
 	takeOutNonRequests(g);
 
 	stack<Vertex<int> *> s;
 
+	// Begin the finding of a solution.
 	rotten_potato(g, g.getTime(), s);
 
-
+	// Check the results.
 	if(s.top()->getInfo() == 0) {
 		cout << "No solution found!" << endl;
 	}
