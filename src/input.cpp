@@ -9,11 +9,11 @@
 
 using namespace std;
 
-void readDetails(Graph<int> &g) {
+void readDetails(Graph<int> &g, string s) {
 	ifstream inFile;
 
 	//Ler o ficheiro nos.txt
-	inFile.open("details.txt");
+	inFile.open(s.c_str());
 
 	if (!inFile) {
 		cerr << "Unable to open file details.txt";
@@ -43,14 +43,14 @@ void readDetails(Graph<int> &g) {
 
 }
 
-void readVertex(Graph<int> &g, GraphViewer *gv) {
+void readVertex(Graph<int> &g, GraphViewer *gv, string s) {
 	ifstream inFile;
 
 	//Ler o ficheiro nos.txt
-	inFile.open("nos.txt");
+	inFile.open(s.c_str());
 
 	if (!inFile) {
-		cerr << "Unable to open file nos.txt";
+		cerr << "Unable to open file " << s << endl;
 		exit(1);   // call system to stop
 	}
 
@@ -81,17 +81,18 @@ void readVertex(Graph<int> &g, GraphViewer *gv) {
 	inFile.close();
 }
 
-void readEdges(Graph<int> &g, GraphViewer *gv) {
+void readEdges(Graph<int> &g, GraphViewer *gv, string s) {
 	ifstream inFile;
-	std::string line;
 
-	//Ler o ficheiro arestas.txt
-	inFile.open("arestas.txt");
+	//Ler o ficheiro nos.txt
+	inFile.open(s.c_str());
 
 	if (!inFile) {
-		cerr << "Unable to open file arestas.txt";
+		cerr << "Unable to open file " << s << endl;
 		exit(1);   // call system to stop
 	}
+
+	string line;
 
 	int idAresta=0;
 	int peso=0;
@@ -129,17 +130,18 @@ void readEdges(Graph<int> &g, GraphViewer *gv) {
 	inFile.close();
 }
 
-void readRequests(Graph<int> &g) {
+void readRequests(Graph<int> &g, string s) {
 	ifstream inFile;
-	std::string line;
 
-	//Ler o ficheiro arestas.txt
-	inFile.open("pedidos.txt");
+	//Ler o ficheiro nos.txt
+	inFile.open(s.c_str());
 
 	if (!inFile) {
-		cerr << "Unable to open file pedidos.txt";
+		cerr << "Unable to open file " << s << endl;
 		exit(1);   // call system to stop
 	}
+
+	string line;
 
 	int idVertex=0;
 	int hora=0;
@@ -165,7 +167,7 @@ void readRequests(Graph<int> &g) {
 
 }
 
-void readFiles(Graph<int> &g) {
+void readFiles1(Graph<int> &g, int s) {
 
 	GraphViewer *gv = new GraphViewer(600, 600, false);
 
@@ -174,13 +176,81 @@ void readFiles(Graph<int> &g) {
 	gv->defineEdgeColor("blue");
 	gv->defineVertexColor("yellow");
 
-	readVertex(g,gv);
+	stringstream file;
 
-	readEdges(g,gv);
+	file << "tests/scenario1/nos" << s << ".txt";
 
-	readRequests(g);
+	readVertex(g,gv,file.str());
 
-	readDetails(g);
+	file.str("");
+
+	file << "tests/scenario1/arestas" << s << ".txt";
+
+	readEdges(g,gv,file.str());
+
+	file.str("");
+	file << "tests/scenario1/pedidos" << s << ".txt";
+
+	readRequests(g,file.str());
+
+	file.str("");
+	file << "tests/scenario1/details" << s << ".txt";
+
+	readDetails(g,file.str());
 
 	gv->rearrange();
 }
+
+void readFiles2(Graph<int> &g, int s) {
+
+	GraphViewer *gv = new GraphViewer(600, 600, false);
+
+	gv->createWindow(600, 600);
+
+	gv->defineEdgeColor("blue");
+	gv->defineVertexColor("yellow");
+
+	stringstream file;
+
+	file.str("");
+	file << "tests/scenario2/nos" << s << ".txt";
+
+	readVertex(g,gv,file.str());
+
+	file.str("");
+	file << "tests/scenario2/arestas" << s << ".txt";
+
+	readEdges(g,gv,file.str());
+
+	file.str("");
+	file << "tests/scenario2/pedidos" << s << ".txt";
+
+	readRequests(g,file.str());
+
+	file.str("");
+	file << "tests/scenario2/details" << s << ".txt";
+
+	readDetails(g,file.str());
+
+	gv->rearrange();
+}
+
+//void readFiles3(Graph<int> &g, int s) {
+//
+//	GraphViewer *gv = new GraphViewer(600, 600, false);
+//
+//	gv->createWindow(600, 600);
+//
+//	gv->defineEdgeColor("blue");
+//	gv->defineVertexColor("yellow");
+//
+//	readVertex(g,gv,s);
+//
+//	readEdges(g,gv,s);
+//
+//	readRequests(g,s);
+//
+//	readDetails(g,s);
+//
+//	gv->rearrange();
+//}

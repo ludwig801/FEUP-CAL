@@ -231,9 +231,7 @@ class Graph {
 
 public:
 
-	~Graph() {
-
-	}
+	~Graph();
 
 	bool addVertex(const T &in);
 	bool addEdge(const T &sourc, const T &dest, double w);
@@ -819,9 +817,6 @@ void Graph<T>::bellmanFordShortestPath(const T &s) {
 }
 
 
-
-
-
 template<class T>
 void Graph<T>::dijkstraShortestPath(const T &s) {
 
@@ -985,6 +980,16 @@ int Graph<T>::getTimeBetween(const int v1, const int v2, bool debug) {
 	}
 
 	return count;
+}
+
+template <class T>
+Graph<T>::~Graph() {
+	typename vector<Vertex<T> *>::iterator it = vertexSet.begin();
+	typename vector<Vertex<T> *>::iterator itEnd = vertexSet.end();
+
+	for(; it != itEnd; ++it) {
+		delete(*it);
+	}
 }
 
 #endif /* GRAPH_H_ */
