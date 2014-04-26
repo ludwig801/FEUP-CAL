@@ -44,6 +44,8 @@ class Vertex {
 
 public:
 
+	int totalTime;
+
 	Vertex(T in);
 	friend class Graph<T>;
 
@@ -132,7 +134,7 @@ bool Vertex<T>::removeEdgeTo(Vertex<T> *d) {
 //atualizado pelo exercício 5
 template <class T>
 Vertex<T>::Vertex(T in): info(in), visited(false), processing(false), indegree(0), dist(0),
-minTime(0), pickupTime(0) {
+minTime(0), pickupTime(0), totalTime(0) {
 	path = NULL;
 }
 
@@ -228,6 +230,11 @@ class Graph {
 	int time;
 
 public:
+
+	~Graph() {
+
+	}
+
 	bool addVertex(const T &in);
 	bool addEdge(const T &sourc, const T &dest, double w);
 	bool removeVertex(const T &in);
@@ -302,6 +309,12 @@ public:
 	}
 
 	void sortVertex();
+	int getTimeBetween(const int v1, const int v2, bool debug = false);
+
+	void setTotalTime();
+	void resetVanSeats() {
+		usedSeats = 0;
+	}
 };
 
 
@@ -420,7 +433,7 @@ void Graph<T>::printGraph() {
 	for (;it != itEnd; it++) {
 		cout << "Vertex: " << (*it)->info << " > " << (*it)->isVisited()
 					<< " (" << (*it)->getPedido().getHora() << ", "
-					<< (*it)->getPedido().getNumPessoas() << ")\n";
+					<< (*it)->getPedido().getNumPessoas() << ")" <<"\n";
 	}
 
 	cout << "=============================" << endl;
@@ -456,7 +469,7 @@ int Graph<T>::getWeightOfEgdeBetween(const T &s, const T &d) {
 
 	//cout << "not found edge" << endl;
 
-	return -1;
+	return 0;
 }
 
 template <class T>
@@ -918,15 +931,60 @@ void Graph<T>::addRequest(const T &in, Pedido pedido) {
 template <class T>
 void Graph<T>::sortVertex() {
 
+	Vertex<int> *tmp;
+
 	for(size_t p = 2; p < this->vertexSet.size(); p++) {
-		Vertex<int> * tmp = vertexSet[p];
+		tmp = vertexSet[p];
+
+		//cout << tmp->totalTime << endl;
+
 		int j;
-		for(j = p; j > 1 && (tmp->getMinTime() < this->getVertex((j-1))->getMinTime()); j--) {
+
+		for(j = p; j > 1 && (tmp->totalTime < vertexSet[j-1]->totalTime); j--) {
+
 			vertexSet[j] = vertexSet[j-1];
 		}
 
 		vertexSet[j] = tmp;
 	}
+}
+
+template <class T>
+void Graph<T>::setTotalTime() {
+	Vertex<int> *tmp;
+
+	for(size_t i = 0; i < vertexSet.size(); i++) {
+			tmp = vertexSet[i];
+
+			tmp->totalTime = tmp->getPedido().getHora() + getTimeBetween(0,tmp->getInfo());
+	}
+}
+
+template <class T>
+int Graph<T>::getTimeBetween(const int v1, const int v2, bool debug) {
+	int count = 0;
+
+	vector<int> res, path;
+
+	path.push_back(v1);
+
+	getfloydWarshallPathAux(v1, v2, res);
+
+	for(unsigned int i = 0; i < res.size(); i++) {
+		path.push_back(res[i]);
+	}
+
+	path.push_back(v2);
+
+	for(unsigned int i = 0; i < path.size() - 1; i++) {
+		count += getWeightOfEgdeBetween(path[i],path[i+1]);
+	}
+
+	if(debug) {
+		cout << "> Time between " << v1 << " and " << v2 << ": " << count << endl;
+	}
+
+	return count;
 }
 
 #endif /* GRAPH_H_ */

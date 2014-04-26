@@ -11,7 +11,18 @@
 #include <iostream>
 
 #define	OVERHEAD	60
-#define DEBUG_MODE true
+
+#define	AIRPORT	0
+
+#define	VISITED			0
+#define	LATE			1
+#define WOULD_BE_LATE	2
+#define IS_OVERHEAD		3
+#define VAN_OVERLOAD	4
+
+#define SUCCESS	-1
+
+#define	DEBUG_MODE true
 
 using namespace std;
 
@@ -89,12 +100,14 @@ string convertTime(int time);
 string convertVertexInfo(int info);
 
 void printStack(stack<Vertex<int> *> s);
-int printDropOffTime(Graph<int> &g, stack<Vertex<int> *> s);
+
+int getDropOffTime(Graph<int> &g, stack<Vertex<int> *> s);
 
 void findSol_1(Graph<int> &g);
 void findSol_2(Graph<int> &g);
 
 int findBestMinTime(Graph<int> &g, bool debug = false);
+int findBestTime(Graph<int> &g, bool debug = false);
 
 int main() {
 	Graph<int> g;
@@ -243,46 +256,106 @@ void printStack(stack<Vertex<int> *> s) {
 	cout << "-----------" << endl;
 }
 
-int recursiveCall(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> &s) {
-	//cout << "-- " << v->getInfo() << " ------" << endl;
-
+int scenario2_recursive(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> &s) {
 
 	if(g.allAreVisited()) {
-		cout << "----------- all are visited ----------- " << endl;
-		return -1;
+		//cout << "----------- all are visited ----------- " << endl;
+		return SUCCESS;
 	}
 
 	if(v->isVisited()) {
 		//cout << "----------- is visited: " << v->getInfo() << endl;
-		return 0;
+		return VISITED;
 	}
 
 	g.usedSeats += v->getPedido().getNumPessoas();
 	if(g.isVanOverloaded()) {
-		cout << "------------ The van is full -----------" << endl;
-		return 4;
+		//cout << "------------ The van is full -----------" << endl;
+		g.usedSeats -= v->getPedido().getNumPessoas();
+		return VAN_OVERLOAD;
 	}
 
-	if(v->getInfo() != 0) {
+	if(v->getInfo() != AIRPORT) {
 
 		int late = 0;
 
 		if(time > v->getMinTime()) {
-			cout << "----------- is late on: " << v->getInfo() << " by " << (time - v->getMinTime()) << " min" << endl;
-			return 1;
+			cout << "----------- is late on: " << convertVertexInfo(v->getInfo()) << " by " << convertTime(time - v->getMinTime()) << " min" << endl;
+			return LATE;
 		}
 		if((late = anyWillBeLate(g, s, v, time)) > 0) {
-			cout << "----------- would be late: " << late << " if: " << v->getInfo() << " was picked up"<< endl;
-			return 2;
+			//cout << "----------- would be late: " << late << " if: " << v->getInfo() << " was picked up"<< endl;
+			return WOULD_BE_LATE;
 		}
 		if(time < (v->getMinTime() - g.overhead)) {
-			cout << "----------- overhead on: " << v->getInfo() << " by " << (v->getMinTime() - g.overhead - time)  << " min" << endl;
-			return 3;
+			cout << "----------- overhead on: " << convertVertexInfo(v->getInfo()) << " by " << convertTime(v->getMinTime() - g.overhead - time)  << " min" << endl;
+			return OVERHEAD;
 		}
 	}
 
-	//cout << "time on: " << v->getInfo() << " --- " << time << endl;
-	//cout << "usedSeats: " << g.usedSeats << endl;
+	v->setVisited(true);
+	v->setPickupTime(time);
+	s.push(v);
+
+	Vertex<int> *temp;
+	int timeBetween;
+
+	for(size_t i = 0; i < g.getVertexSet().size(); i++) {
+
+		temp = g.getVertexSet()[i];
+
+		if(temp->getInfo() != v->getInfo()) {
+			timeBetween = getTimeBetween(g, v->getInfo(), temp->getInfo());
+
+			if(timeBetween > 0) {
+				switch(scenario2_recursive(g, temp, time + timeBetween, s)) {
+				case VISITED:
+					break;
+				case LATE:
+					break;
+				case VAN_OVERLOAD:
+					return VAN_OVERLOAD;
+				case SUCCESS:
+					return SUCCESS;
+				default:
+					break;
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+int scenario1_recursive(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> &s) {
+
+	if(g.allAreVisited()) {
+		//cout << "----------- all are visited ----------- " << endl;
+		return SUCCESS;
+	}
+
+	if(v->isVisited()) {
+		//cout << "----------- is visited: " << v->getInfo() << endl;
+		return VISITED;
+	}
+
+	if(v->getInfo() != AIRPORT) {
+
+		int late = 0;
+
+		if(time > v->getMinTime()) {
+			cout << "----------- is late on: " << convertVertexInfo(v->getInfo()) << " by " << convertTime(time - v->getMinTime()) << " min" << endl;
+			return LATE;
+		}
+		if((late = anyWillBeLate(g, s, v, time)) > 0) {
+			//cout << "----------- would be late: " << late << " if: " << v->getInfo() << " was picked up"<< endl;
+			return WOULD_BE_LATE;
+		}
+		if(time < (v->getMinTime() - g.overhead)) {
+			cout << "----------- overhead on: " << convertVertexInfo(v->getInfo()) << " by " << convertTime(v->getMinTime() - g.overhead - time)  << " min" << endl;
+			return OVERHEAD;
+		}
+	}
 
 	v->setVisited(true);
 	v->setPickupTime(time);
@@ -298,37 +371,22 @@ int recursiveCall(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> 
 
 		temp = g.getVertexSet()[i];
 
-		if(temp->getInfo() != v->getInfo()) {
+		if((temp->getInfo() != v->getInfo()) && (temp->getInfo() != AIRPORT)) {
 			timeBetween = getTimeBetween(g, v->getInfo(), temp->getInfo());
 
 			if(timeBetween > 0) {
-				//cout << endl;
 
-				//cout << "  Vertex (" << v->getInfo() << ") at " << time << endl;
-				//cout << "calling rotten_potato2() on: " << temp->getInfo() << endl;
-				switch(recursiveCall(g, temp, time + timeBetween, s)) {
-				case 0:
-					/*
-					 * NOT VIABLE
-					 */
+				switch(scenario1_recursive(g, temp, time + timeBetween, s)) {
+				case VISITED:
 					break;
-				case 1:
-					/*
-					 * LATE
-					 */
-					if(s.top()->getInfo() != 0) {
+				case LATE:
+					if(s.top()->getInfo() != AIRPORT) {
 						s.top()->setVisited(false);
-						g.usedSeats -= s.top()->getPedido().getNumPessoas();
 						s.pop();
 					}
 					return 0;
-				case 4:
-					return 4;
-				case -1:
-					/*
-					 * ALL VISITED
-					 */
-					return -1;
+				case SUCCESS:
+					return SUCCESS;
 				default:
 					break;
 				}
@@ -336,35 +394,12 @@ int recursiveCall(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> 
 		}
 	}
 
-	return 0;
-}
-
-int scenario1_recursive(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> &s) {
-
-
-	switch(recursiveCall(g, v, time, s)) {
-	case -1:
-		/*
-		 * ALL VISITED
-		 */
-		return -1;
-	default:
-		break;
-	}
-
-	if(s.top()->getInfo() != 0) {
+	if(s.top()->getInfo() != AIRPORT) {
 		s.top()->setVisited(false);
 		s.pop();
-		printStack(s);
 	}
 
 	return 0;
-
-}
-
-int scenario2_recursive(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> &s) {
-
-	return recursiveCall(g, v, time, s);
 }
 
 int scenario1(Graph<int> &g, int time, stack<Vertex<int> *> &s) {
@@ -381,8 +416,8 @@ int scenario1(Graph<int> &g, int time, stack<Vertex<int> *> &s) {
 	for(size_t i = 0; i < g.getVertexSet().size(); i++) {
 		temp = g.getVertexSet()[i];
 
-		if(temp->getInfo() != 0) {
-			timeBetween = getTimeBetween(g, 0, temp->getInfo());
+		if(temp->getInfo() != AIRPORT) {
+			timeBetween = getTimeBetween(g, AIRPORT, temp->getInfo());
 
 			if(timeBetween > 0) {
 				if (scenario1_recursive(g, temp, time + timeBetween, s) < 0) {
@@ -402,13 +437,15 @@ int scenario2(Graph<int> &g, int time, stack<Vertex<int> *> &s) {
 	Vertex<int> *temp = g.getVertex(0);
 
 	int timeBetween;
+	int trips = 0;
+	int tripsWithSolution = 0;
+
+	bool full = false;
 
 	// Put the airport in the stack.
 	temp->setVisited(true);
 	temp->setPickupTime(time);
 	s.push(temp);
-
-	bool full = false;
 
 	while(true){
 		full = false;
@@ -416,67 +453,77 @@ int scenario2(Graph<int> &g, int time, stack<Vertex<int> *> &s) {
 		for(size_t i = 0; i < g.getVertexSet().size(); i++ ) {
 			temp = g.getVertexSet()[i];
 
-			if(temp->getInfo() != 0) {
-				timeBetween = getTimeBetween(g, 0, temp->getInfo());
+			if(temp->getInfo() != AIRPORT) {
+				timeBetween = getTimeBetween(g, AIRPORT, temp->getInfo());
 
 				if(timeBetween > 0) {
 
-					switch(scenario2_recursive(g, temp, time + timeBetween, s)) {
-					case -1:
-						return -1;
-					case 4:
+					switch(scenario2_recursive(g, temp, time + timeBetween , s)) {
+					case VISITED:
+						break;
+					case SUCCESS:
+						return SUCCESS;
+					case LATE:
+						break;
+					case VAN_OVERLOAD:
 						full = true;
 						break;
 					default:
 						break;
 					}
-
 				}
 
 				if(full) break;
 
+				if(s.top()->getInfo() != AIRPORT) break;
+
 			}
 		}
 
-		if(g.allAreVisited()) {
-			break;
-		}
-		else {
+		if(s.top()->getInfo() == AIRPORT) {
 
-			g.usedSeats = 0;
+			trips++;
 
-			if(s.top()->getInfo() == 0) {
+			if(tripsWithSolution == (trips - 1)) {
 
 				Vertex<int>* v = g.getVertex(findBestMinTime(g));
+
 				if(time <= ( v->getMinTime() - getTimeBetween(g, 0, v->getInfo()))) {
+
 					time = v->getMinTime() - getTimeBetween(g, 0, v->getInfo());
+
 					g.setTime(time);
 					g.getVertex(0)->setPickupTime(time);
+
 				} else {
-					//cout << "No solution found" << endl;
 					return 0;
 				}
 			}
 			else {
-
-
-				// Check the results.
-				printStack(s);
-				time = printDropOffTime(g, s);
-
-				//cout << "time: " << convertTime(time) << endl;
-
-				eraseStack(s);
-				g.getVertex(0)->setPickupTime(time);
+				return 0;
 			}
 
 		}
+		else { // PARTIAL SOLUTION
+
+			time = getDropOffTime(g, s);
+
+			printStack(s);
+			eraseStack(s);
+
+			g.getVertex(AIRPORT)->setPickupTime(time);
+			g.resetVanSeats();
+
+			trips++;
+			tripsWithSolution++;
+		}
+
 	}
 
 	return 0;
 }
 
-int printDropOffTime(Graph<int> &g, stack<Vertex<int> *> s) {
+int getDropOffTime(Graph<int> &g, stack<Vertex<int> *> s) {
 	int finalTime = g.getTime();
 
 	Vertex<int> * temp;
@@ -499,6 +546,10 @@ int printDropOffTime(Graph<int> &g, stack<Vertex<int> *> s) {
 }
 
 void findSol_1(Graph<int> &g) {
+
+	cout << endl << "---------- BEGIN OF SCENARIO 1 ---------" << endl << endl;
+
+	g.resetVanSeats();
 
 	// Initializes graph vertex visited to false.
 	g.setVisited(false);
@@ -530,12 +581,17 @@ void findSol_1(Graph<int> &g) {
 	}
 	else {
 		printStack(s);
-		printDropOffTime(g, s);
+		getDropOffTime(g,s);
 	}
+
+	cout << endl << "----------- END OF SCENARIO 1 ----------" << endl << endl;
 
 }
 
 void findSol_2(Graph<int> &g) {
+
+	g.resetVanSeats();
+
 	// Initializes graph vertex visited to false.
 	g.setVisited(false);
 
@@ -553,10 +609,7 @@ void findSol_2(Graph<int> &g) {
 
 	stack<Vertex<int> *> s;
 
-
 	g.sortVertex();
-
-	g.printGraph();
 
 	if(!isViable(g, true)) {
 		return;
@@ -571,7 +624,7 @@ void findSol_2(Graph<int> &g) {
 	}
 	else {
 		printStack(s);
-		printDropOffTime(g, s);
+		getDropOffTime(g, s);
 	}
 }
 
@@ -598,6 +651,28 @@ int findBestMinTime(Graph<int> &g, bool debug) {
 	}
 }
 
+int findBestTime(Graph<int> &g, bool debug) {
+	int best = INT_MAX;
+	int id = 0;
+	vector<Vertex<int> *> v = g.getVertexSet();
+	for(size_t i = 0; i < v.size(); i++) {
+		if(!v[i]->isVisited()) {
+			if(v[i]->totalTime <= best){
+				best = v[i]->totalTime;
+				id = v[i]->getInfo();
+			}
+		}
+	}
+
+	if(debug) cout << "Best min time: " << best << endl;
+
+	if(best != INT_MAX) {
+		return id;
+	} else {
+		return -1;
+	}
+}
+
 bool isViable(Graph<int> &g, bool debug) {
 
 	vector<Vertex<int> *> v = g.getVertexSet();
@@ -607,9 +682,9 @@ bool isViable(Graph<int> &g, bool debug) {
 		if(v[i]->getPedido().getNumPessoas() > g.seats) {
 			if(debug) {
 				cout << "Vertex " << v[i]->getInfo()
-						<< " has too much passengers ("
-						<< v[i]->getPedido().getNumPessoas()
-						<< ")." << endl;
+								<< " has too much passengers ("
+								<< v[i]->getPedido().getNumPessoas()
+								<< ")." << endl;
 			}
 			return false;
 		}
@@ -618,9 +693,9 @@ bool isViable(Graph<int> &g, bool debug) {
 		if(v[i]->getMinTime() < g.getTime() && v[i]->getMinTime() > 0) {
 			if(debug) {
 				cout << "Vertex " << v[i]->getInfo()
-						<< " can never be on time ("
-						<< v[i]->getMinTime()
-						<< ")." << endl;
+								<< " can never be on time ("
+								<< v[i]->getMinTime()
+								<< ")." << endl;
 			}
 			return false;
 		}
