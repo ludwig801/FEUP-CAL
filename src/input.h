@@ -36,10 +36,6 @@ void readEdges(Graph<int> &g, GraphViewer *gv, string s);
 
 void readRequests(Graph<int> &g, string s);
 
-void readFiles1(Graph<int> &g, int s);
-
-void readFiles2(Graph<int> &g, int s);
-
-void readFiles3(Graph<int> &g, int s);
+void readFiles(Graph<int> &g, int scenario, int index);
 
 #endif /* INPUT_H_ */
