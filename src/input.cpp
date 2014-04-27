@@ -63,7 +63,7 @@ void readVertex(Graph<int> &g, GraphViewer *gv, string s) {
 	while(std::getline(inFile, line))
 	{
 		std::stringstream linestream(line);
-		std::string         data;
+		std::string data;
 
 		linestream >> idNo;
 
