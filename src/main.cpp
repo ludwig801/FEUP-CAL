@@ -970,6 +970,10 @@ bool isValid(Graph<int> &g, Vertex<int> *from, Vertex<int> *to, int time) {
 		return false;
 	}
 
+	if(g.usedSeats + to->getPedido().getNumPessoas() > g.seats) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -1161,6 +1165,8 @@ void calculateSolution(Graph<int> &g, vector<vector<Vertex<int> *> > &matrix, ve
 			v[best]->setPickupTime(time + timeBetween);
 			p.push(time + timeBetween);
 
+			g.usedSeats += v[best]->getPedido().getNumPessoas();
+
 			calculateSolution(g, matrix, matrix[v[best]->getInfo() - 1], s, p, time + timeBetween);
 			return;
 		}
@@ -1226,6 +1232,7 @@ void calculateSolutions(Graph<int> &g, vector<vector<Vertex<int> *> > &v) {
 			//printStack(sol, p);
 
 			numVans++;
+			g.resetVanSeats();
 		}
 
 		// SOLUTION ACHIEVED
