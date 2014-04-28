@@ -14,58 +14,139 @@
 //
 
 int main() {
-	Graph<int> g1, g2, g3;
-	Graph<int> g1_fail, g2_fail;
 
-	// Read test files for scenario 1
-	readFiles(g1,1,1);
+	cout << " ====================== " << endl;
+	cout << "  TRANSFER MANAGEMENT   " << endl;
+	cout << " ====================== " << endl;
 
-	// Find Solution for first scenario
-	if(scenario1(g1) == true) {
-		cout << "Success on 1" << endl;
-	}
-	else {
-		cout << "Error on 1" << endl;
-	}
+	int scenario = 0;
 
-	readFiles(g1_fail,1,2);
+	while(scenario <= 0 || scenario > 3) {
+		cout << " Choose scenario [1] [2] [3]: ";
+		 std::string line;
+		    double d;
+		    while (std::getline(std::cin, line))
+		    {
+		        std::stringstream ss(line);
+		        if (ss >> d)
+		        {
+		            if (ss.eof())
+		            {
+		            	scenario = d;
+		                break;
+		            }
+		        }
 
-	if(scenario1(g1_fail) == false) {
-		cout << "Success on fail 1" << endl;
-	}
-	else {
-		cout << "Error on fail 1" << endl;
-	}
-
-	// Read test files for scenario 2
-	readFiles(g2,2,1);
-
-	// Find Solution for second scenario
-	if(scenario2(g2) == true) {
-		cout << "Success on 2" << endl;
-	}
-	else {
-		cout << "Error on 2" << endl;
+		        cout << " Choose scenario [1] [2] [3]: ";
+		    }
 	}
 
-	readFiles(g2_fail,2,2);
+	int test = 0;
 
-	if(scenario2(g2_fail) == false) {
-		cout << "Success on fail 2" << endl;
+	while(test <= 0) {
+		cout << " Test number? ";
+		 std::string line;
+		    double d;
+		    while (std::getline(std::cin, line))
+		    {
+		        std::stringstream ss(line);
+		        if (ss >> d)
+		        {
+		            if (ss.eof())
+		            {
+		            	scenario = d;
+		                break;
+		            }
+		        }
+
+		        cout << " Test number? ";
+		    }
 	}
-	else {
-		cout << "Error on fail 2" << endl;
+
+	Graph<int> g;
+
+	// Reads test files.
+	readFiles(g, scenario, test);
+
+	switch(scenario) {
+	case 1:
+		if(scenario1(g) == true) {
+			cout << "Success on 1" << endl;
+		}
+		else {
+			cout << "Error on 1" << endl;
+		}
+		break;
+	case 2:
+		if(scenario2(g) == true) {
+			cout << "Success on 2" << endl;
+		}
+		else {
+			cout << "Error on 2" << endl;
+		}
+		break;
+	case 3:
+		scenario3(g);
+		break;
+	default:
+		break;
 	}
-
-	// Read test files for scenario 3
-	readFiles(g3,3,1);
-
-	// Find Solution for second scenario
-	scenario3(g3);
 
 	getchar();
-
 	return 0;
+
+//	Graph<int> g1, g2, g3;
+//	Graph<int> g1_fail, g2_fail;
+//
+//	// Read test files for scenario 1
+//	readFiles(g1,1,1);
+//
+//	// Find Solution for first scenario
+//	if(scenario1(g1) == true) {
+//		cout << "Success on 1" << endl;
+//	}
+//	else {
+//		cout << "Error on 1" << endl;
+//	}
+//
+//	readFiles(g1_fail,1,2);
+//
+//	if(scenario1(g1_fail) == false) {
+//		cout << "Success on fail 1" << endl;
+//	}
+//	else {
+//		cout << "Error on fail 1" << endl;
+//	}
+//
+//	// Read test files for scenario 2
+//	readFiles(g2,2,1);
+//
+//	// Find Solution for second scenario
+//	if(scenario2(g2) == true) {
+//		cout << "Success on 2" << endl;
+//	}
+//	else {
+//		cout << "Error on 2" << endl;
+//	}
+//
+//	readFiles(g2_fail,2,2);
+//
+//	if(scenario2(g2_fail) == false) {
+//		cout << "Success on fail 2" << endl;
+//	}
+//	else {
+//		cout << "Error on fail 2" << endl;
+//	}
+//
+//	// Read test files for scenario 3
+//	readFiles(g3,3,1);
+//
+//	// Find Solution for second scenario
+//	scenario3(g3);
+//
+//	getchar();
+//
+//	return 0;
 }
 
 // _________________________
