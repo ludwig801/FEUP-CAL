@@ -206,7 +206,7 @@ int scenario1_firstcall(Graph<int> &g, int time, stack<Vertex<int> *> &s);
  *
  * @param g : Grafo a resolver.
  */
-void scenario1(Graph<int> &g);
+bool scenario1(Graph<int> &g);
 
 /**
  * Funcao recursiva para a resoluacao do cenario 2.
@@ -232,7 +232,7 @@ int scenario2_firstcall(Graph<int> &g, int time, stack<Vertex<int> *> &s);
  *
  * @param g : Grafo a resolver.
  */
-void scenario2(Graph<int> &g);
+bool scenario2(Graph<int> &g);
 
 /**
  * Verifica se vertice esta em alguma das solucoes.
