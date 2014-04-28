@@ -99,28 +99,104 @@ void reverseStack(stack<T> &from, stack<T> &to);
 template <class T>
 void eraseStack(stack<T> &s);
 
+/**
+ * Converte o tempo passado para horas e minutos (legivel). O tempo passado é de minutos desde as 0h.
+ *
+ * @param time Tempo passado.
+ */
 string convertTime(int time);
 
+/**
+ * Converte a info de um vertice para um formato legivel.
+ *
+ * @param info Informacao do vertice.
+ */
 string convertVertexInfo(int info);
 
+/**
+ * Imprime uma stack.
+ *
+ * @param s Stack a imprimir.
+ */
 void printStack(stack<Vertex<int> *> s);
 
+/**
+ * Imprime e devolve o tempo em que o cliente foi deixado no aeroporto (ponto inicial).
+ *
+ * @param g Grafo.
+ * @param s Stack de recolhas.
+ */
 int getDropOffTime(Graph<int> &g, stack<Vertex<int> *> s);
 
+/**
+ * Encontra o menor tempo minimo existente no grafo, nos clientes nao visitados.
+ *
+ * @param g Grafo.
+ */
 int findBestMinTime(Graph<int> &g, bool debug = false);
-
 int findBestTime(Graph<int> &g, bool debug = false);
 
+/**
+ * Funcao recursiva para a resoluacao do cenario 1.
+ *
+ * @param g Grafo
+ * @param v Vertice actual
+ * @param time Tempo actual
+ * @param s Stack de recolhas
+ */
 int scenario1_recursive(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> &s);
+/**
+ * Funcao recursiva para a resoluacao do cenario 2.
+ *
+ * @param g Grafo
+ * @param v Vertice actual
+ * @param time Tempo actual
+ * @param s Stack de recolhas
+ */
 int scenario2_recursive(Graph<int> &g, Vertex<int>* v, int time, stack<Vertex<int> *> &s);
 
+/**
+ * Inicializacao para o cenario 1.
+ *
+ * @param g Grafo
+ * @param time Tempo actual
+ * @param s Stack de recolhas
+ */
 int scenario1_firstcall(Graph<int> &g, int time, stack<Vertex<int> *> &s);
+/**
+ * Inicializacao para o cenario 2.
+ *
+ * @param g Grafo
+ * @param time Tempo actual
+ * @param s Stack de recolhas
+ */
 int scenario2_firstcall(Graph<int> &g, int time, stack<Vertex<int> *> &s);
 
+/**
+ * Chamada da resolucao do grafo para o cenario 1.
+ *
+ * @param g Grafo a resolver.
+ */
 void scenario1(Graph<int> &g);
+/**
+ * Chamada da resolucao do grafo para o cenario 2.
+ *
+ * @param g Grafo a resolver.
+ */
 void scenario2(Graph<int> &g);
+/**
+ * Chamada da resolucao do grafo para o cenario 3.
+ *
+ * @param g Grafo a resolver.
+ */
 void scenario3(Graph<int> &g);
 
+/**
+ * Verifica se vertice esta em alguma das solucoes.
+ *
+ * @param v Vertice.
+ * @param solutions Stack de solucoes.
+ */
 bool inAnySolution(Vertex<int> *v, vector<stack<Vertex<int> *> > solutions);
 
 

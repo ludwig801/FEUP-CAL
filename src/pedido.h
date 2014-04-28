@@ -8,14 +8,25 @@
 #ifndef PEDIDO_H_
 #define PEDIDO_H_
 
-
+/**
+ * Pedido/Cliente
+ *
+ * Guarda todas as informacoes acerca de um cliente. Como o numero de pessoas que pretende transportar e a hora
+ * pretendida para chegada ao aeroporto.
+ */
 class Pedido {
-	int hora;
-	int numPessoas;
+	int hora;			/*< Hora pretendida de chegada ao aeroporto */
+	int numPessoas;		/*< Numero de pessoas a transportar */
 
 public:
+	/**
+	 * Construtor default.
+	 */
 	Pedido(): hora(0), numPessoas(0) {};
 
+	/**
+	 * Construtor completo.
+	 */
 	Pedido(int hora, int num): hora(hora),numPessoas(num) {};
 
 	int getHora() const {
