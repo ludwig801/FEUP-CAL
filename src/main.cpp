@@ -54,7 +54,7 @@ int main() {
 		        {
 		            if (ss.eof())
 		            {
-		            	scenario = d;
+		            	test = d;
 		                break;
 		            }
 		        }
@@ -62,6 +62,11 @@ int main() {
 		        cout << " Test number? ";
 		    }
 	}
+
+	// Redirect cout to file.
+	ofstream out("output.txt");
+	streambuf *coutbuf = std::cout.rdbuf(); // Saves old buf.
+	cout.rdbuf(out.rdbuf());
 
 	Graph<int> g;
 
@@ -91,6 +96,11 @@ int main() {
 	default:
 		break;
 	}
+
+	cout.rdbuf(coutbuf);
+	cout << endl
+			<< "Calculation done. The solution has been saved to 'output.txt'. "
+			<< endl;
 
 	getchar();
 	return 0;
