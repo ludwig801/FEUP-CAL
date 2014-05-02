@@ -1,0 +1,89 @@
+
+------------ BEGIN OF SCENARIO 3 -----------
+
+-- vector --
+[ B C E G H J M O Q V ]
+[ C B E G H J M O Q V ]
+[ D N R S T U ]
+[ E B C G H J M O Q V ]
+[ F G H I K L P V ]
+[ G B C E F H J M O Q V ]
+[ H B C E F G J M O Q V ]
+[ I F K L P ]
+[ J B C E G H M O Q V ]
+[ K F I L P ]
+[ L F I K P ]
+[ M B C E G H J O Q V ]
+[ N D R S T U ]
+[ O B C E G H J M Q V ]
+[ P F I K L ]
+[ Q B C E G H J M O V ]
+[ R D N S T U ]
+[ S D N R T U ]
+[ T D N R S U ]
+[ U D N R S T ]
+[ V B C E F G H J M O Q ]
+[ W X Y ]
+[ X W Y ]
+[ Y W X ]
+------------
+
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+------ BEST SOLUTION ------
+Vans used: 9
+
+-- stack --
+
+ --> on <vertex> at: <pickup_time>  [overhead limit, pickup limit, airport limit]
+
+Start at: 2h10min
+ --> on X at: 3h5min  [3h5min, 4h5min, 5h0min]
+ --> on Y at: 3h20min  [3h15min, 4h15min, 5h10min]
+ --> on W at: 3h25min  [2h40min, 3h40min, 4h30min]
+Dropoff at: 4h15min
+Start at: 8h50min
+ --> on E at: 9h10min  [9h10min, 10h10min, 10h30min]
+ --> on B at: 9h15min  [8h35min, 9h35min, 10h0min]
+ --> on C at: 9h30min  [8h30min, 9h30min, 10h0min]
+ --> on J at: 9h45min  [8h45min, 9h45min, 10h30min]
+Dropoff at: 10h30min
+Start at: 5h0min
+ --> on I at: 5h30min  [5h30min, 6h30min, 7h0min]
+Dropoff at: 6h0min
+Start at: 11h30min
+ --> on D at: 12h5min  [12h5min, 13h5min, 13h40min]
+ --> on R at: 12h30min  [12h30min, 13h30min, 14h10min]
+ --> on N at: 12h35min  [12h0min, 13h0min, 13h40min]
+ --> on S at: 12h40min  [11h55min, 12h55min, 13h40min]
+Dropoff at: 13h25min
+Start at: 6h10min
+ --> on F at: 6h45min  [6h45min, 7h45min, 8h20min]
+Dropoff at: 7h20min
+Start at: 7h50min
+ --> on M at: 8h25min  [8h25min, 9h25min, 10h0min]
+ --> on Q at: 8h30min  [8h20min, 9h20min, 10h0min]
+Dropoff at: 9h10min
+Start at: 7h40min
+ --> on H at: 8h20min  [8h20min, 9h20min, 10h0min]
+ --> on G at: 8h35min  [8h5min, 9h5min, 10h0min]
+ --> on V at: 9h10min  [8h10min, 9h10min, 10h0min]
+ --> on O at: 9h20min  [8h40min, 9h40min, 10h30min]
+Dropoff at: 10h10min
+Start at: 5h14min
+ --> on L at: 5h59min  [5h59min, 6h59min, 7h44min]
+ --> on P at: 6h4min  [5h50min, 6h50min, 7h40min]
+ --> on K at: 6h9min  [5h45min, 6h45min, 7h40min]
+Dropoff at: 7h4min
+Start at: 11h20min
+ --> on T at: 12h5min  [12h5min, 13h5min, 13h50min]
+ --> on U at: 12h20min  [11h35min, 12h35min, 13h20min]
+Dropoff at: 13h5min
+
+-----------
+
+---------------------------
+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+------------- END OF SCENARIO 3 ------------
+
